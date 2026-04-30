@@ -226,5 +226,16 @@ OXE_NAMED_MIXTURES: Dict[str, List[Tuple[str, float]]] = {
     "aloha1_put_X_into_pot_300_demos": [
         ("aloha1_put_X_into_pot_300_demos", 1.0),
     ],
-# fmt: on
+# === SO-101 Fine-Tuning Datasets ===                                               
+    "so101_block_pickup": [                                                             
+        ("so101_block_pickup", 1.0),                                                    
+    ],                                                                                  
+    "so101_red_block_pickup": [                                                                         
+        ("so101_red_block_pickup", 1.0),
+    ],                                                                                                  
+    "so101_all": [                                        
+        ("so101_block_pickup", 1.0),                                                                    
+        ("so101_red_block_pickup", 1.0),                  
+    ],
+
 }

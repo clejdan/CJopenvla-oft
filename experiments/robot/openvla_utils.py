@@ -278,9 +278,24 @@ def get_vla(cfg: Any) -> torch.nn.Module:
         update_auto_map(cfg.pretrained_checkpoint)
         check_model_logic_mismatch(cfg.pretrained_checkpoint)
 
+    # Support LoRA-only checkpoints: load base model then apply adapter
+    import json as _json
+    _lora_path = os.path.join(cfg.pretrained_checkpoint, "lora_adapter")
+    _has_weights = (
+        os.path.exists(os.path.join(cfg.pretrained_checkpoint, "model.safetensors")) or
+        os.path.exists(os.path.join(cfg.pretrained_checkpoint, "pytorch_model.bin")) or
+        any(f.startswith("model-") and f.endswith(".safetensors") for f in os.listdir(cfg.pretrained_checkpoint))
+    )
+    if not _has_weights and os.path.isdir(_lora_path):
+        _adapter_cfg = _json.load(open(os.path.join(_lora_path, "adapter_config.json")))
+        _base_path = _adapter_cfg["base_model_name_or_path"]
+        print(f"LoRA-only checkpoint, loading base model from {_base_path}")
+    else:
+        _base_path = cfg.pretrained_checkpoint
+
     # Load the model
     vla = AutoModelForVision2Seq.from_pretrained(
-        cfg.pretrained_checkpoint,
+        _base_path,
         # attn_implementation="flash_attention_2",
         torch_dtype=torch.bfloat16,
         load_in_8bit=cfg.load_in_8bit,
@@ -288,6 +303,13 @@ def get_vla(cfg: Any) -> torch.nn.Module:
         low_cpu_mem_usage=True,
         trust_remote_code=True,
     )
+
+    # Apply and merge LoRA adapter if present
+    if not _has_weights and os.path.isdir(_lora_path):
+        from peft import PeftModel
+        print("Applying and merging LoRA adapter...")
+        vla = PeftModel.from_pretrained(vla, _lora_path)
+        vla = vla.merge_and_unload()
 
     # If using FiLM, wrap the vision backbone to allow for infusion of language inputs
     if cfg.use_film:

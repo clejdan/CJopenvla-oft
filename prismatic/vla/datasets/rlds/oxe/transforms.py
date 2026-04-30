@@ -845,6 +845,11 @@ def aloha_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
     # Don't need to do anything because dataset is already in the correct format
     return trajectory
 
+def so101_block_pickup_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
+      return trajectory
+
+def so101_red_block_pickup_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:             
+      return trajectory
 
 # === Registry ===
 OXE_STANDARDIZATION_TRANSFORMS = {
@@ -930,4 +935,7 @@ OXE_STANDARDIZATION_TRANSFORMS = {
     "aloha1_fold_shirt_30_demos": aloha_dataset_transform,
     "aloha1_scoop_X_into_bowl_45_demos": aloha_dataset_transform,
     "aloha1_put_X_into_pot_300_demos": aloha_dataset_transform,
+    ### SO-101 Fine-tuning datasets                       
+    "so101_block_pickup": so101_block_pickup_dataset_transform,
+    "so101_red_block_pickup": so101_red_block_pickup_dataset_transform,   
 }

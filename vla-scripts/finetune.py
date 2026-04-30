@@ -831,9 +831,23 @@ def finetune(cfg: FinetuneConfig) -> None:
     dist.barrier()
 
     # Load processor and VLA
-    processor = AutoProcessor.from_pretrained(cfg.vla_path, trust_remote_code=True)
+    # When resuming from a LoRA-only checkpoint, load the base model separately
+    load_path = cfg.vla_path
+    if cfg.resume:
+        has_weights = any(
+            os.path.exists(os.path.join(cfg.vla_path, f))
+            for f in ["pytorch_model.bin", "model.safetensors",
+                      "pytorch_model.bin.index.json", "model.safetensors.index.json"]
+        )
+        if not has_weights:
+            base_name = os.path.basename(cfg.vla_path).split("+")[0]
+            load_path = os.path.join(os.path.dirname(os.path.dirname(cfg.vla_path)), base_name)
+            if distributed_state.is_main_process:
+                print(f"LoRA-only checkpoint detected, loading base model from {load_path}")
+
+    processor = AutoProcessor.from_pretrained(load_path, trust_remote_code=True)
     vla = AutoModelForVision2Seq.from_pretrained(
-        cfg.vla_path,
+        load_path,
         torch_dtype=torch.bfloat16,
         low_cpu_mem_usage=True,
         trust_remote_code=True,
@@ -844,14 +858,18 @@ def finetune(cfg: FinetuneConfig) -> None:
 
     # LoRA setup
     if cfg.use_lora:
-        lora_config = LoraConfig(
-            r=cfg.lora_rank,
-            lora_alpha=min(cfg.lora_rank, 16),
-            lora_dropout=cfg.lora_dropout,
-            target_modules="all-linear",
-            init_lora_weights="gaussian",
-        )
-        vla = get_peft_model(vla, lora_config)
+        if cfg.resume:
+            adapter_dir = os.path.join(cfg.vla_path, "lora_adapter")
+            vla = PeftModel.from_pretrained(vla, adapter_dir, is_trainable=True)
+        else:
+            lora_config = LoraConfig(
+                r=cfg.lora_rank,
+                lora_alpha=min(cfg.lora_rank, 16),
+                lora_dropout=cfg.lora_dropout,
+                target_modules="all-linear",
+                init_lora_weights="gaussian",
+            )
+            vla = get_peft_model(vla, lora_config)
         vla.print_trainable_parameters()
 
     # FiLM setup
