@@ -1,23 +1,23 @@
 #!/bin/bash
 #SBATCH --job-name=oft-rizon4
-#SBATCH --partition=work1
-#SBATCH --gres=gpu:a100:1          # check `sinfo -o "%G %N"`; 7B + LoRA needs ~30-60 GB, so use a 40/80 GB GPU
+#SBATCH --gpus-per-node=a100:1
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=100G
 #SBATCH --time=24:00:00
-#SBATCH --output=rizon4.%j.out
-#SBATCH --error=rizon4.%j.err
+#SBATCH --output=/scratch/clejahd/rizon4/logs/train_%j.out
+#SBATCH --error=/scratch/clejahd/rizon4/logs/train_%j.err
 
 # Usage: sbatch scripts/rizon4/finetune_rizon4.sbatch
 # Paths: edit for your account.
-REPO=${REPO:-$HOME/CJopenvla-oft}
+REPO=${REPO:-$HOME/openvla-oft}
 DATA_ROOT=${DATA_ROOT:-/scratch/$USER/tensorflow_datasets}   # contains rizon4_strawberry_harvest/
 RUN_ROOT=${RUN_ROOT:-/scratch/$USER/openvla-checkpoints}
 
-module load miniforge3/24.3.0-0 cuda/12.3.0
-source activate openvla-oft
+source ~/.bashrc
+module load anaconda3 cuda/12.3.0
+conda activate openvla-oft
 cd "$REPO"
 export HF_HOME=${HF_HOME:-/scratch/$USER/hf_cache}
 
