@@ -238,4 +238,8 @@ OXE_NAMED_MIXTURES: Dict[str, List[Tuple[str, float]]] = {
         ("so101_red_block_pickup", 1.0),                  
     ],
 
+    # === Flexiv Rizon 4 Fine-Tuning Datasets ===
+    "rizon4_strawberry_harvest": [
+        ("rizon4_strawberry_harvest", 1.0),
+    ],
 }

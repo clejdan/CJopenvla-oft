@@ -851,6 +851,11 @@ def so101_block_pickup_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str
 def so101_red_block_pickup_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:             
       return trajectory
 
+def rizon4_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
+    # Converter (scripts/rizon4/lerobot_to_rlds.py) already emits the final format
+    return trajectory
+
+
 # === Registry ===
 OXE_STANDARDIZATION_TRANSFORMS = {
     "bridge_oxe": bridge_oxe_dataset_transform,
@@ -938,4 +943,6 @@ OXE_STANDARDIZATION_TRANSFORMS = {
     ### SO-101 Fine-tuning datasets                       
     "so101_block_pickup": so101_block_pickup_dataset_transform,
     "so101_red_block_pickup": so101_red_block_pickup_dataset_transform,   
+    ### Flexiv Rizon 4 fine-tuning datasets
+    "rizon4_strawberry_harvest": rizon4_dataset_transform,
 }

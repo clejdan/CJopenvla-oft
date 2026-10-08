@@ -50,6 +50,14 @@ SO101_CONSTANTS = {
     "ACTION_PROPRIO_NORMALIZATION_TYPE": NormalizationType.BOUNDS,
 }
 
+# Flexiv Rizon 4: 7 joint positions + gripper, recorded at 20 Hz (absolute joint-position actions)
+RIZON4_CONSTANTS = {
+    "NUM_ACTIONS_CHUNK": 20,
+    "ACTION_DIM": 8,
+    "PROPRIO_DIM": 8,
+    "ACTION_PROPRIO_NORMALIZATION_TYPE": NormalizationType.BOUNDS_Q99,
+}
+
 
 # Function to detect robot platform from command line arguments
 def detect_robot_platform():
@@ -61,6 +69,8 @@ def detect_robot_platform():
         return "ALOHA"
     elif "bridge" in cmd_args:
         return "BRIDGE"
+    elif "rizon4" in cmd_args:
+        return "RIZON4"
     elif "so101" in cmd_args:
         return "SO101"
     else:
@@ -77,6 +87,8 @@ elif ROBOT_PLATFORM == "ALOHA":
     constants = ALOHA_CONSTANTS
 elif ROBOT_PLATFORM == "BRIDGE":
     constants = BRIDGE_CONSTANTS
+elif ROBOT_PLATFORM == "RIZON4":
+    constants = RIZON4_CONSTANTS
 elif ROBOT_PLATFORM == "SO101":
     constants = SO101_CONSTANTS
 
