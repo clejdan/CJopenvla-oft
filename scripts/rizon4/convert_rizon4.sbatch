@@ -3,25 +3,33 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64gb
+#SBATCH --mem=96gb
 #SBATCH --time=12:00:00
 #SBATCH --output=/scratch/clejahd/rizon4/logs/convert_%j.out
 #SBATCH --error=/scratch/clejahd/rizon4/logs/convert_%j.err
-# CPU-only: LeRobot v3 (StrawberryHarvester) -> RLDS. Creates a converter env on first run.
-# Override datasets with: REPOS="a/b c/d" sbatch scripts/rizon4/convert_rizon4.sbatch
+# CPU-only. Two stages in two existing envs (lerobot and tensorflow cannot share one env):
+#   1. extract: LeRobot v3 -> per-episode .npz        (conda env `lerobot`; parallel pyav decode, ~SLURM_CPUS_PER_TASK procs)
+#   2. build:   .npz -> RLDS/TFDS                      (conda env `openvla-oft`)
+# Usage: [THREE_CAM=1] PRIMARY=side sbatch scripts/rizon4/convert_rizon4.sbatch   (override sets with REPOS="a/b c/d")
 set -e
+source ~/.bashrc
 module load anaconda3
 export HF_HOME=/scratch/clejahd/hf_cache
-OUT=/scratch/clejahd/tensorflow_datasets
-ENV=/scratch/clejahd/envs/rizon4-convert
-REPOS=${REPOS:-"StrawberryHarvester/MASKED_PURPLE_Pot_1_and_2_Red-3_redo_side_full-long-2026-09-17"}
-
-if [ ! -d "$ENV" ]; then
-  conda create -y -p "$ENV" python=3.10
+# THREE_CAM=1 -> also store the second third-person camera; writes rizon4_three_cam_strawberry_harvest, separate npz dir
+if [ "${THREE_CAM:-0}" = 1 ]; then
+  NPZ=/scratch/clejahd/rizon4/npz_3cam; FLAG=--three_cam
+else
+  NPZ=/scratch/clejahd/rizon4/npz; FLAG=
 fi
-source activate "$ENV"
-python -c "import tensorflow_datasets, lerobot" 2>/dev/null || pip install "tensorflow-cpu==2.15.0" "tensorflow_datasets==4.9.3" "lerobot==0.4.4" av pillow
-
-mkdir -p "$OUT"
+OUT=/scratch/clejahd/tensorflow_datasets
+REPOS=${REPOS:-"StrawberryHarvester/MASKED_PURPLE_Pot_1_and_2_Red-3_redo_side_full-long-2026-09-17"}
 cd /home/clejahd/openvla-oft
-python scripts/rizon4/lerobot_to_rlds.py --repo_ids $REPOS --output_dir "$OUT" --primary_camera "${PRIMARY:-scene}"
+
+if [ "${SKIP_EXTRACT:-0}" != 1 ]; then
+conda activate lerobot
+python scripts/rizon4/lerobot_to_rlds.py extract --repo_ids $REPOS --npz_dir "$NPZ" --primary_camera "${PRIMARY:-scene}" $FLAG
+fi
+
+conda activate openvla-oft
+mkdir -p "$OUT"
+python scripts/rizon4/lerobot_to_rlds.py build --npz_dir "$NPZ" --output_dir "$OUT" $FLAG

@@ -731,4 +731,12 @@ OXE_DATASET_CONFIGS = {
         "state_encoding": StateEncoding.JOINT,
         "action_encoding": ActionEncoding.JOINT_POS_RIZON4,
     },
+    # Same robot, 3 cameras: primary = side, secondary = scene, wrist (train with --num_images_in_input 3)
+    "rizon4_three_cam_strawberry_harvest": {
+        "image_obs_keys": {"primary": "image", "secondary": "secondary_image", "wrist": "wrist_image"},
+        "depth_obs_keys": {"primary": None, "secondary": None, "wrist": None},
+        "state_obs_keys": ["state"],
+        "state_encoding": StateEncoding.JOINT,
+        "action_encoding": ActionEncoding.JOINT_POS_RIZON4,
+    },
 }

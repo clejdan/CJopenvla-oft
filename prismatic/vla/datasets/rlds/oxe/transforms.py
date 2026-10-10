@@ -945,4 +945,5 @@ OXE_STANDARDIZATION_TRANSFORMS = {
     "so101_red_block_pickup": so101_red_block_pickup_dataset_transform,   
     ### Flexiv Rizon 4 fine-tuning datasets
     "rizon4_strawberry_harvest": rizon4_dataset_transform,
+    "rizon4_three_cam_strawberry_harvest": rizon4_dataset_transform,
 }

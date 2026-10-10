@@ -78,11 +78,14 @@ class RLDSBatchTransform:
         # Add additional inputs
         if self.use_wrist_image:
             all_wrist_pixels = []
-            for k in rlds_batch["observation"].keys():
-                if "wrist" in k:
-                    img_wrist = Image.fromarray(rlds_batch["observation"][k][0])
-                    pixel_values_wrist = self.image_transform(img_wrist)
-                    all_wrist_pixels.append(pixel_values_wrist)
+            # Extra views are concatenated in a fixed order: image_secondary (if loaded), then every *wrist* view.
+            # Inference must build the extra images in the same order.
+            obs = rlds_batch["observation"]
+            extra_keys = [k for k in obs.keys() if k == "image_secondary"] + [k for k in obs.keys() if "wrist" in k]
+            for k in extra_keys:
+                img_wrist = Image.fromarray(obs[k][0])
+                pixel_values_wrist = self.image_transform(img_wrist)
+                all_wrist_pixels.append(pixel_values_wrist)
             return_dict["pixel_values_wrist"] = torch.cat(all_wrist_pixels, dim=0)
         if self.use_proprio and "proprio" in rlds_batch["observation"]:
             proprio = rlds_batch["observation"]["proprio"]
@@ -115,6 +118,8 @@ class RLDSDataset(IterableDataset):
         # fmt: off
         if "aloha" in self.data_mix:
             load_camera_views = ("primary", "left_wrist", "right_wrist")
+        elif "three_cam" in self.data_mix:
+            load_camera_views = ("primary", "secondary", "wrist")
         else:
             load_camera_views = ("primary", "wrist")
 

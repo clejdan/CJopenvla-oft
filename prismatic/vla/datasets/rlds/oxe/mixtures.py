@@ -242,4 +242,7 @@ OXE_NAMED_MIXTURES: Dict[str, List[Tuple[str, float]]] = {
     "rizon4_strawberry_harvest": [
         ("rizon4_strawberry_harvest", 1.0),
     ],
+    "rizon4_three_cam_strawberry_harvest": [
+        ("rizon4_three_cam_strawberry_harvest", 1.0),
+    ],
 }

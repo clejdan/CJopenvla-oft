@@ -1,0 +1,53 @@
+#!/bin/bash
+#SBATCH --job-name=oft-rizon4-3cam
+#SBATCH --gpus-per-node=h100:2
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --time=24:00:00
+#SBATCH --output=/scratch/clejahd/rizon4/logs/train3cam_%j.out
+#SBATCH --error=/scratch/clejahd/rizon4/logs/train3cam_%j.err
+
+# 3-camera variant (primary=side, secondary=scene, wrist). Needs the dataset from: THREE_CAM=1 PRIMARY=side sbatch scripts/rizon4/convert_rizon4.sbatch
+# Usage: sbatch scripts/rizon4/finetune_rizon4_3cam.sbatch
+# Paths: edit for your account.
+REPO=${REPO:-$HOME/openvla-oft}
+DATA_ROOT=${DATA_ROOT:-/scratch/$USER/tensorflow_datasets}   # contains rizon4_strawberry_harvest/
+RUN_ROOT=${RUN_ROOT:-/scratch/$USER/openvla-checkpoints}
+
+source ~/.bashrc
+module load anaconda3 cuda/12.3.0
+conda activate openvla-oft
+cd "$REPO"
+# No wandb entity configured -> log offline (sync later with `wandb sync`). Set WANDB_ENTITY to log online.
+[ -z "$WANDB_ENTITY" ] && export WANDB_MODE=offline
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export HF_HOME=${HF_HOME:-/scratch/$USER/hf_cache}
+
+# NOTE: "rizon4" must appear in the command line -- prismatic/vla/constants.py uses it to pick
+# the Rizon 4 constants (ACTION_DIM=8, PROPRIO_DIM=8, NUM_ACTIONS_CHUNK=20). The dataset name provides it.
+torchrun --standalone --nnodes 1 --nproc-per-node 2 vla-scripts/finetune.py \
+  --vla_path openvla/openvla-7b \
+  --data_root_dir "$DATA_ROOT" \
+  --dataset_name rizon4_three_cam_strawberry_harvest \
+  --run_root_dir "$RUN_ROOT" \
+  --use_l1_regression True \
+  --use_diffusion False \
+  --use_film True \
+  --num_images_in_input 3 \
+  --use_proprio True \
+  --batch_size 4 \
+  --grad_accumulation_steps 2 \
+  --learning_rate 5e-4 \
+  --num_steps_before_decay 20000 \
+  --max_steps 30000 \
+  --use_val_set True \
+  --val_freq 2500 \
+  --save_freq 5000 \
+  --save_latest_checkpoint_only False \
+  --image_aug True \
+  --lora_rank 32 \
+  --wandb_entity "${WANDB_ENTITY:-your-wandb-entity}" \
+  --wandb_project "${WANDB_PROJECT:-rizon4-oft}" \
+  --run_id_note rizon4_3cam
