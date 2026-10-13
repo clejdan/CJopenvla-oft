@@ -11,7 +11,7 @@
 
 # Usage: sbatch scripts/rizon4/finetune_rizon4.sbatch
 # Paths: edit for your account.
-REPO=${REPO:-$HOME/openvla-oft}
+REPO=${REPO:-$HOME/CJopenvla-oft}
 DATA_ROOT=${DATA_ROOT:-/scratch/$USER/tensorflow_datasets}   # contains rizon4_strawberry_harvest/
 RUN_ROOT=${RUN_ROOT:-/scratch/$USER/openvla-checkpoints}
 

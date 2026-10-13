@@ -22,5 +22,7 @@ for split in b.info.splits:
 ex = list(next(iter(tfds.as_numpy(b.as_dataset(split="train").take(1))))["steps"])
 o = ex[0]["observation"]
 print("image", o["image"].shape, o["image"].dtype, "wrist", o["wrist_image"].shape, "state", o["state"].shape, "action", ex[0]["action"].shape)
+if "secondary_image" in o:
+    print("secondary_image", o["secondary_image"].shape, o["secondary_image"].dtype)
 print("instruction:", ex[0]["language_instruction"].decode())
 print("is_first[0], is_last[-1]:", ex[0]["is_first"], ex[-1]["is_last"])

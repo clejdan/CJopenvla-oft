@@ -5,14 +5,14 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=120G
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --output=/scratch/clejahd/rizon4/logs/train3cam_%j.out
 #SBATCH --error=/scratch/clejahd/rizon4/logs/train3cam_%j.err
 
 # 3-camera variant (primary=side, secondary=scene, wrist). Needs the dataset from: THREE_CAM=1 PRIMARY=side sbatch scripts/rizon4/convert_rizon4.sbatch
-# Usage: sbatch scripts/rizon4/finetune_rizon4_3cam.sbatch
+# Usage: [DATA_ROOT=.. RUN_ROOT=.. RUN_NOTE=..] sbatch scripts/rizon4/finetune_rizon4_3cam.sbatch
 # Paths: edit for your account.
-REPO=${REPO:-$HOME/openvla-oft}
+REPO=${REPO:-$HOME/CJopenvla-oft}
 DATA_ROOT=${DATA_ROOT:-/scratch/$USER/tensorflow_datasets}   # contains rizon4_strawberry_harvest/
 RUN_ROOT=${RUN_ROOT:-/scratch/$USER/openvla-checkpoints}
 
@@ -50,4 +50,4 @@ torchrun --standalone --nnodes 1 --nproc-per-node 2 vla-scripts/finetune.py \
   --lora_rank 32 \
   --wandb_entity "${WANDB_ENTITY:-your-wandb-entity}" \
   --wandb_project "${WANDB_PROJECT:-rizon4-oft}" \
-  --run_id_note rizon4_3cam
+  --run_id_note "${RUN_NOTE:-rizon4_3cam}"

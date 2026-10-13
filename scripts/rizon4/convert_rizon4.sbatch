@@ -10,20 +10,21 @@
 # CPU-only. Two stages in two existing envs (lerobot and tensorflow cannot share one env):
 #   1. extract: LeRobot v3 -> per-episode .npz        (conda env `lerobot`; parallel pyav decode, ~SLURM_CPUS_PER_TASK procs)
 #   2. build:   .npz -> RLDS/TFDS                      (conda env `openvla-oft`)
-# Usage: [THREE_CAM=1] PRIMARY=side sbatch scripts/rizon4/convert_rizon4.sbatch   (override sets with REPOS="a/b c/d")
+# Usage: [THREE_CAM=1] [NPZ=.. OUT=..] PRIMARY=side sbatch scripts/rizon4/convert_rizon4.sbatch   (override sets with REPOS="a/b c/d")
 set -e
 source ~/.bashrc
 module load anaconda3
 export HF_HOME=/scratch/clejahd/hf_cache
 # THREE_CAM=1 -> also store the second third-person camera; writes rizon4_three_cam_strawberry_harvest, separate npz dir
 if [ "${THREE_CAM:-0}" = 1 ]; then
-  NPZ=/scratch/clejahd/rizon4/npz_3cam; FLAG=--three_cam
+  NPZ=${NPZ:-/scratch/clejahd/rizon4/npz_3cam}; FLAG=--three_cam
 else
-  NPZ=/scratch/clejahd/rizon4/npz; FLAG=
+  NPZ=${NPZ:-/scratch/clejahd/rizon4/npz}; FLAG=
 fi
-OUT=/scratch/clejahd/tensorflow_datasets
+# NPZ / OUT override the intermediate and output dirs (needed for a different REPOS: dataset names are fixed, and extract skips existing episodes)
+OUT=${OUT:-/scratch/clejahd/tensorflow_datasets}
 REPOS=${REPOS:-"StrawberryHarvester/MASKED_PURPLE_Pot_1_and_2_Red-3_redo_side_full-long-2026-09-17"}
-cd /home/clejahd/openvla-oft
+cd ${REPO:-$HOME/CJopenvla-oft}
 
 if [ "${SKIP_EXTRACT:-0}" != 1 ]; then
 conda activate lerobot

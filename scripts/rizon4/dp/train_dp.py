@@ -137,6 +137,8 @@ step, t0 = 0, time.time()
 while step < a.max_steps:
     for batch in dl:
         b = prep(batch, dev)
+        for i, key in enumerate(IMG_KEYS.values()):  # forward() stacks the per-camera keys itself
+            b[key] = b[OBS_IMAGES][:, :, i]
         with torch.autocast("cuda", dtype=torch.bfloat16):
             loss, _ = policy(b)
         opt.zero_grad(set_to_none=True)

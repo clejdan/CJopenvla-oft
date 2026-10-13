@@ -8,7 +8,7 @@
 #SBATCH --error=/scratch/clejahd/rizon4/logs/dp_train_%j.err
 # Usage: sbatch [--dependency=afterok:<dump_jobid>] scripts/rizon4/dp/train_dp_rizon4.sbatch   (env lerobot)
 # Extra args pass through, e.g.:  sbatch ... train_dp_rizon4.sbatch --max_steps 200 --val_freq 100
-REPO=${REPO:-$HOME/openvla-oft}
+REPO=${REPO:-$HOME/CJopenvla-oft}
 source ~/.bashrc; module load anaconda3; conda activate lerobot
 cd "$REPO"
 export HF_HUB_OFFLINE=1 WANDB_MODE=offline

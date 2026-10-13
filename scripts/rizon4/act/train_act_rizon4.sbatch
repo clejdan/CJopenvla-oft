@@ -7,7 +7,7 @@
 #SBATCH --output=/scratch/clejahd/rizon4/logs/act_train_%j.out
 #SBATCH --error=/scratch/clejahd/rizon4/logs/act_train_%j.err
 # Usage: sbatch --dependency=afterok:<dump_jobid> scripts/rizon4/act/train_act_rizon4.sbatch   (env lerobot)
-REPO=${REPO:-$HOME/openvla-oft}
+REPO=${REPO:-$HOME/CJopenvla-oft}
 source ~/.bashrc; module load anaconda3; conda activate lerobot
 cd "$REPO"
 export HF_HUB_OFFLINE=1 WANDB_MODE=offline
