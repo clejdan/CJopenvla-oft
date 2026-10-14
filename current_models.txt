@@ -1,0 +1,3 @@
+OpenVLA-OFT, 2 Cam style, 40 episodes. /scratch/clejahd/openvla-checkpoints
+ACT - rizon4 /scratch/clejahd/rizon4/act_ckpt/, 10 checkpoints
+Diffusion Policy - rizon4, /scratch/clejahd/dp_ckpt/, 10 checkpoints
